@@ -1,0 +1,560 @@
+Smarty 3.x
+
+作者: Monte Ohrt <monte at ohrt dot com >
+作者: Uwe Tews
+
+SMARTY 3 介绍：
+
+ 3.1 发布版本通知：
+
+请看 附带的 SMARTY_3.1_NOTES.txt 文件
+
+3.0.5 发布版本通知:
+
+Smarty 现在默认遵循PHP error_reporting 等级。如果PHP不掩饰 E_NOTICE，而且你试图获取一个没有设置的临时变量，你将会收到一个 E_NOTICE 警告，要恢复到旧的行为：
+```
+$smarty->error_reporting = E_ALL & ~E_NOTICE;
+```
+
+3.0 发布版本通知：
+
+重要：在RC4到3.0发布版本之间一些API接口进行了一些调整.
+我们认为现在进行调整比等到3.0之后的版本再调整要有益处，在线文档也对这些变化进行了更新。详细情况如下：
+
+---- API CHANGES RC4 -> 3.0 ----
+
+$smarty->register->*
+$smarty->unregister->*
+$smarty->utility->*
+$samrty->cache->*
+
+以上均修改会本地方法调用，例如：
+
+$smarty->clearAllCache()
+$smarty->registerFoo()
+$smarty->unregisterFoo()
+$smarty->testInstall()
+等到
+
+函数、数据块、编辑器和修饰符插件的注册都已经合并在两个API调用下：
+
+$smarty->registerPlugin(...)
+$smarty->unregisterPlugin(...)
+
+pre，post,output和变量filters的注册也都已经合并在两个API调用下：
+
+$smarty->registerFilter(...)
+$smarty->unregisterFilter(...)
+
+这些具体的变化请查阅在线文档：
+
+http://www.smarty.net/documentation
+
+----
+
+Smarty 3的 API 被重构为面向一致性和模块化的语法，Smarty 2 的API语法仍然支持，但是会抛出一个不赞成通知。
+你可以无视这个通知，但是由于smarty2 会通过一个额外的路由包装运行，所以还是强烈建议调整到 Smarty 3.
+
+基本上，所有的smarty方法都遵循 "fooBarBaz" 驼峰语法，同时，
+所有的Smarty属性都有相应的 getters和setters.例如，属性
+$smarty->cache_dir 可以通过 $smarty->setCacheDir('foo/') 设置，可以通过$smarty->getCacheDir()重新取回.
+
+一些 Smarty 3 APIs 已经废弃了，比如说一些类似于 "is*"的方法，现在已经调整为类似 "get*"的方法.
+
+下面是 Smarty 3 API的简要报告:
+
+$smarty->fetch($template, $cache_id = null, $compile_id = null, $parent = null)
+$smarty->display($template, $cache_id = null, $compile_id = null, $parent = null)
+$smarty->isCached($template, $cache_id = null, $compile_id = null)
+$smarty->createData($parent = null)
+$smarty->createTemplate($template, $cache_id = null, $compile_id = null, $parent = null)
+$smarty->enableSecurity()
+$smarty->disableSecurity()
+$smarty->setTemplateDir($template_dir)
+$smarty->addTemplateDir($template_dir)
+$smarty->templateExists($resource_name)
+$smarty->loadPlugin($plugin_name, $check = true)
+$smarty->loadFilter($type, $name)
+$smarty->setExceptionHandler($handler)
+$smarty->addPluginsDir($plugins_dir)
+$smarty->getGlobal($varname = null)
+$smarty->getRegisteredObject($name)
+$smarty->getDebugTemplate()
+$smarty->setDebugTemplate($tpl_name)
+$smarty->assign($tpl_var, $value = null, $nocache = false)
+$smarty->assignGlobal($varname, $value = null, $nocache = false)
+$smarty->assignByRef($tpl_var, &$value, $nocache = false)
+$smarty->append($tpl_var, $value = null, $merge = false, $nocache = false)
+$smarty->appendByRef($tpl_var, &$value, $merge = false)
+$smarty->clearAssign($tpl_var)
+$smarty->clearAllAssign()
+$smarty->configLoad($config_file, $sections = null)
+$smarty->getVariable($variable, $_ptr = null, $search_parents = true, $error_enable = true)
+$smarty->getConfigVariable($variable)
+$smarty->getStreamVariable($variable)
+$smarty->getConfigVars($varname = null)
+$smarty->clearConfig($varname = null)
+$smarty->getTemplateVars($varname = null, $_ptr = null, $search_parents = true)
+$smarty->clearAllCache($exp_time = null, $type = null)
+$smarty->clearCache($template_name, $cache_id = null, $compile_id = null, $exp_time = null, $type = null)
+
+$smarty->registerPlugin($type, $tag, $callback, $cacheable = true, $cache_attr = array())
+
+$smarty->registerObject($object_name, $object_impl, $allowed = array(), $smarty_args = true, $block_methods = array())
+
+$smarty->registerFilter($type, $function_name)
+$smarty->registerResource($resource_type, $function_names)
+$smarty->registerDefaultPluginHandler($function_name)
+$smarty->registerDefaultTemplateHandler($function_name)
+
+$smarty->unregisterPlugin($type, $tag)
+$smarty->unregisterObject($object_name)
+$smarty->unregisterFilter($type, $function_name)
+$smarty->unregisterResource($resource_type)
+
+$smarty->compileAllTemplates($extension = '.tpl', $force_compile = false, $time_limit = 0, $max_errors = null)
+$smarty->clearCompiledTemplate($resource_name = null, $compile_id = null, $exp_time = null)
+$smarty->testInstall()
+
+// then all the getters/setters, available for all properties. Here are a few:
+
+$caching = $smarty->getCaching();      // get $smarty->caching
+$smarty->setCaching(true);             // set $smarty->caching
+$smarty->setDeprecationNotices(false); // set $smarty->deprecation_notices
+$smarty->setCacheId($id);              // set $smarty->cache_id
+$debugging = $smarty->getDebugging();  // get $smarty->debugging
+
+
+文档结构
+
+Smarty 3 的文档结构和Smarty 2很相似:
+
+/libs/
+  Smarty.class.php
+/libs/sysplugins/
+  internal.*
+/libs/plugins/
+  function.mailto.php
+  modifier.escape.php
+  ...
+
+大部分 Smarty 3核心功能在 sysplugins文件夹里，你在这里不需要改变任何文件.
+ Smarty 插件在 /libs/plugins/ 文件夹里，你可以在这里自行添加自己的插件，或者
+ 创建一个独立的插件目录，这些操作和smarty 2 一致。你还需要创建自己的
+/cache/, /templates/, /templates_c/, /configs/ 文件夹，但是要确定 /cache/ 和
+/templates_c/ 可写.
+
+使用Smarty3 的传统方式也很眼熟：
+
+
+require('Smarty.class.php');
+$smarty = new Smarty;
+$smarty->assign('foo','bar');
+$smarty->display('index.tpl');
+
+
+但是， Smarty 3 内部工作方式完全不同，Smarty 3 主要向后兼容 Smarty 2,除了如下几点：
+
+*) Smarty 3 只能在 PHP 5运行，不支持 PHP 4.
+*) {php} 标签默认不能使用，要用 $smarty->allow_php_tag=true修改。
+*) 包围空格的分隔符不再认为是 Smarty标签.
+   因此，{ foo } 不会被认为是标签操作，必须使用 {foo}.这个变化会更容易使用
+   Javascript/CSS， 不需要 {literal}.
+   这个设置可以通过 $smarty->auto_literal = false取消;
+*) Smarty 3 API有点不一样，大部分 Smarty 2 API 调用不推荐但是还可以使用，为了效率你可以更新你的调用到3
+
+
+
+ Smarty 3中有一些新的内容，下面是需要注意的几项：
+   
+LEXER/PARSER
+============
+
+Smarty 3现在使用记号赋予器分析parser/compiler语法.基本上，这意味着
+ Smarty有一些附加语法可以让使用更简单，比如内置属性模板，短而直观的功能参数选项，
+ 无限递归函数，更加精确的error handling等等.
+
+
+SMARTY TEMPLATE SYNTAX中新东西
+=====================================
+
+Smarty 3 可以在几乎所有地方允许表达式，表达式包括PHP 函数，只要这些没有被安全政策、对象方法和属性禁用。
+ 例如，{math} 插件不再必要但是还是被BC支持。
+
+例子：
+{$x+$y}                           计算x与y的和.
+{$foo = strlen($bar)}             分配的函数
+{assign var=foo value= $x+$y}     属性
+{$foo = myfunct( ($x+$y)*3 )}     作为函数参数
+{$foo[$x+3]}                      作为数组索引
+
+Smarty标签可以作为其他标签的数值.
+Example:  {$foo={counter}+3}
+
+Smarty 标签也可以在双引号中使用.
+Example:  {$foo="this is message {counter}"}
+
+你可以用模板定义数组：
+Examples:
+{assign var=foo value=[1,2,3]}
+{assign var=foo value=['y'=>'yellow','b'=>'blue']}
+数组可以嵌套：
+{assign var=foo value=[1,[9,8],3]}
+这里有一个新的短的语法支持分配变量：
+Example: {$foo=$bar+2}
+
+你可以分配一个数据到一个特殊的数组元素，如果变量存在但是不是一个数组，
+它会在新的数据被分配前转为数组。
+Examples:
+{$foo['bar']=1}
+{$foo['bar']['blar']=1}
+
+你可以给一个数组添加数据，如果变量存在但是不是一个数组，
+它会在新的数据被分配前转为数组。
+
+Example: {$foo[]=1}
+
+你可以用一个PHP类型的语法获取数组元素，以及原始的dot表示法
+
+Examples:
+{$foo[1]}             基本 access
+{$foo['bar']}
+{$foo['bar'][1]}
+{$foo[$x+$x]}         下标可以包括各种表达式
+{$foo[$bar[1]]}       嵌套下标
+{$foo[section_name]}  smarty 部分访问，而不是数组 access!
+
+保留原始的 "dot"表示法，并且有部分更新.
+Examples:
+{$foo.a.b.c}        =>  $foo['a']['b']['c'] 
+{$foo.a.$b.c}       =>  $foo['a'][$b]['c']        变量下标
+{$foo.a.{$b+4}.c}   =>  $foo['a'][$b+4]['c']       表达式下标
+{$foo.a.{$b.c}}     =>  $foo['a'][$b['c']]         嵌套下标
+
+注意 使用dot嵌套语法时{ 和 } 用于避免模糊.
+
+变量名称本身也可以是变量，包括表达式等.
+Examples:
+$foo         基本变量
+$foo_{$bar}  包括其他变量的变量
+$foo_{$x+$y} 变量名称包括表达式
+$foo_{$bar}_buh_{$blar}  有多段的变量名称
+{$foo_{$x}}  将会输出变量 $foo_1 ，如果$x 值为1
+
+对象方法可以链接实现.
+Example: {$object->method1($x)->method2($y)}
+
+增加{for}标签来进行循环 (替换了 {section} 标签):
+{for $x=0, $y=count($foo); $x<$y; $x++}  ....  {/for}
+任意数目的表达式可以用于{for}里面的第一个初始表达式，用逗号分隔。
+
+{for $x = $start to $end step $step} ... {/for}is in the SVN now .
+你也可以用
+{for $x = $start to $end} ... {/for}
+在这个例子中，步长默认为 1 or -1，这取决于初始和结束的值.
+你可以用任意表达式替换 $start and $end .
+在循环里可以获得以下特殊变量：
+
+$x@iteration = 迭代次数
+$x@total = 迭代总次数
+$x@first = 真正的第一次迭代
+$x@last = 真正的最后一次迭代
+
+
+Smarty 2 {section} 语法仍然支持.
+
+更短的{foreach} 语法可用于数组循环.
+Example: {foreach $myarray as $var}...{/foreach}
+
+在foreach循环里，可以获得以下属性:
+
+$var@key            foreach $var 数组 key
+$var@iteration      foreach 现在的迭代次数 (1,2,3...)
+$var@index          foreach 现在的迭代次数 (0,1,2...)
+$var@total          foreach $var array total
+$var@first          第一次真正的迭代
+$var@last           最后一次真正的迭代
+
+Smarty 2 {foreach} 标签语法仍然支持.
+
+注意: {$bar[foo]} 仍然显示变量而不是{section}名称 foo.
+如果你想要得到数组元素和下标 foo,你必须使用引用，比如 {$bar['foo']}, 或者使用 dot语法 {$bar.foo}.
+
+while语块这样使用：
+{while $foo}...{/while}
+{while $x lt 10}...{/while}
+
+直接获取 PHP:
+就像你可以直接在修改器中直接使用 PHP函数一样，你可以直接获取PHP功能，
+只要他们允许安全设置
+{time()}
+
+这里有一个新的 {function}...{/function} 语块标签可以实现一个临时的函数.
+这可以允许重新使用代码块，例如 嵌入函数. 可以实现递归调用.
+临时函数必须用新的{call name=foo...} 标签调用.
+
+Example:
+
+临时文件:
+{function name=menu level=0}
+  <ul class="level{$level}">
+  {foreach $data as $entry}
+    {if is_array($entry)}
+      <li>{$entry@key}</li>
+       {call name=menu data=$entry level=$level+1}
+    {else}
+      <li>{$entry}</li>
+    {/if}
+  {/foreach}
+  </ul>
+{/function}
+
+{$menu = ['item1','item2','item3' => ['item3-1','item3-2','item3-3' =>
+  ['item3-3-1','item3-3-2']],'item4']}
+
+{call name=menu data=$menu}
+
+
+生成输出:
+    * item1
+    * item2
+    * item3
+          o item3-1
+          o item3-2
+          o item3-3
+                + item3-3-1
+                + item3-3-2
+    * item4
+
+函数标签自身必须有“名称”属性，当调用这个函数的时候这个名称是一个标签名称。
+ 函数标签可能有任意数目的额外属性，这可以用本地变量默认设置.
+
+新的 {nocache}语块功能:
+{nocache}...{/nocache} 会声明一个模板，当模板缓存被启动的时候，会变为非缓存
+
+现在的非缓存变量:
+你可以声明变量/函数输出作为有非缓存属性的费缓存
+
+Examples:
+
+{$foo nocache=true}
+{$foo nocache} /* same */
+
+{foo bar="baz" nocache=true}
+{foo bar="baz" nocache} /* same */
+
+{time() nocache=true}
+{time() nocache} /* same */
+
+或者你可以在非缓存 中在你的语句中分配变量:
+$smarty->assign('foo',$something,true); // third param is nocache setting
+{$foo} /* non-cached */
+
+$smarty.current_dir returns the directory name of the current template.
+
+你也可以直接使用字符串作为临时“字符串”资源类型.
+Examples:
+$smarty->display('string:This is my template, {$foo}!'); // php
+{include file="string:This is my template, {$foo}!"} // template
+
+
+
+VARIABLE SCOPE / VARIABLE STORAGE
+=================================
+
+In Smarty 2, all assigned variables were stored within the Smarty object. 
+Therefore, all variables assigned in PHP were accessible by all subsequent 
+fetch and display template calls.
+
+In Smarty 3, we have the choice to assign variables to the main Smarty object, 
+to user-created data objects, and to user-created template objects. 
+These objects can be chained. The object at the end of a chain can access all
+variables belonging to that template and all variables within the parent objects.
+The Smarty object can only be the root of a chain, but a chain can be isolated
+from the Smarty object.
+
+All known Smarty assignment interfaces will work on the data and template objects.
+
+Besides the above mentioned objects, there is also a special storage area for
+global variables.
+
+A Smarty data object can be created as follows:
+$data = $smarty->createData();    // create root data object
+$data->assign('foo','bar');       // assign variables as usual
+$data->config_load('my.conf');									 // load config file    
+
+$data= $smarty->createData($smarty);  // create data object having a parent link to
+the Smarty object
+
+$data2= $smarty->createData($data);   // create data object having a parent link to
+the $data data object
+
+A template object can be created by using the createTemplate method. It has the
+same parameter assignments as the fetch() or display() method.
+Function definition:
+function createTemplate($template, $cache_id = null, $compile_id = null, $parent = null)
+
+The first parameter can be a template name, a smarty object or a data object.
+
+Examples:
+$tpl = $smarty->createTemplate('mytpl.tpl'); // create template object not linked to any parent
+$tpl->assign('foo','bar');                   // directly assign variables
+$tpl->config_load('my.conf');									 // load config file    
+
+$tpl = $smarty->createTemplate('mytpl.tpl',$smarty);  // create template having a parent link to the Smarty object
+$tpl = $smarty->createTemplate('mytpl.tpl',$data);    // create template having a parent link to the $data object
+
+The standard fetch() and display() methods will implicitly create a template object.
+If the $parent parameter is not specified in these method calls, the template object
+is will link back to the Smarty object as it's parent.
+
+If a template is called by an {include...} tag from another template, the
+subtemplate links back to the calling template as it's parent. 
+
+All variables assigned locally or from a parent template are accessible. If the
+template creates or modifies a variable by using the {assign var=foo...} or
+{$foo=...} tags, these new values are only known locally (local scope). When the
+template exits, none of the new variables or modifications can be seen in the
+parent template(s). This is same behavior as in Smarty 2. 
+
+With Smarty 3, we can assign variables with a scope attribute which allows the
+availablility of these new variables or modifications globally (ie in the parent
+templates.)
+
+Possible scopes are local, parent, root and global. 
+Examples:
+{assign var=foo value='bar'}       // no scope is specified, the default 'local'
+{$foo='bar'}                       // same, local scope
+{assign var=foo value='bar' scope='local'} // same, local scope
+
+{assign var=foo value='bar' scope='parent'} // Values will be available to the parent object 
+{$foo='bar' scope='parent'}                 // (normally the calling template)
+
+{assign var=foo value='bar' scope='root'}   // Values will be exported up to the root object, so they can 
+{$foo='bar' scope='root'}                   // be seen from all templates using the same root.
+
+{assign var=foo value='bar' scope='global'} // Values will be exported to global variable storage, 
+{$foo='bar' scope='global'}                 // they are available to any and all templates.
+
+
+The scope attribute can also be attached to the {include...} tag. In this case,
+the specified scope will be the default scope for all assignments within the
+included template.
+
+
+PLUGINS
+=======
+
+Smarty 3 plugins follow the same coding rules as in Smarty 2. 
+The main difference is that the template object is now passed in place of the smarty object. 
+The smarty object can be still be accessed through $template->smarty.
+
+smarty_plugintype_name (array $params, Smarty_Internal_Template $template)
+
+The Smarty 2 plugins are still compatible as long as they do not make use of specific Smarty 2 internals.
+
+
+TEMPLATE INHERITANCE:
+=====================
+
+With template inheritance you can define blocks, which are areas that can be
+overriden by child templates, so your templates could look like this: 
+
+parent.tpl:
+<html>
+  <head>
+    <title>{block name='title'}My site name{/block}</title>
+  </head>
+  <body>
+    <h1>{block name='page-title'}Default page title{/block}</h1>
+    <div id="content">
+      {block name='content'}
+        Default content
+      {/block}
+    </div>
+  </body>
+</html>
+
+child.tpl:
+{extends file='parent.tpl'} 
+{block name='title'}
+Child title
+{/block}
+
+grandchild.tpl:
+{extends file='child.tpl'} 
+{block name='title'}Home - {$smarty.block.parent}{/block} 
+{block name='page-title'}My home{/block}
+{block name='content'}
+  {foreach $images as $img}
+    <img src="{$img.url}" alt="{$img.description}" />
+  {/foreach}
+{/block}
+
+We redefined all the blocks here, however in the title block we used {$smarty.block.parent},
+which tells Smarty to insert the default content from the parent template in its place.
+The content block was overriden to display the image files, and page-title has also be 
+overriden to display a completely different title. 
+
+If we render grandchild.tpl we will get this: 
+<html>
+  <head>
+    <title>Home - Child title</title>
+  </head>
+  <body>
+    <h1>My home</h1>
+    <div id="content">
+      <img src="/example.jpg" alt="image" />
+      <img src="/example2.jpg" alt="image" />
+      <img src="/example3.jpg" alt="image" />
+    </div>
+  </body>
+</html>
+
+NOTE: In the child templates everything outside the {extends} or {block} tag sections
+is ignored.
+
+The inheritance tree can be as big as you want (meaning you can extend a file that 
+extends another one that extends another one and so on..), but be aware that all files 
+have to be checked for modifications at runtime so the more inheritance the more overhead you add.
+
+Instead of defining the parent/child relationships with the {extends} tag in the child template you
+can use the resource as follow:
+
+$smarty->display('extends:parent.tpl|child.tpl|grandchild.tpl');
+
+Child {block} tags may optionally have a append or prepend attribute. In this case the parent block content 
+is appended or prepended to the child block content.
+
+{block name='title' append} My title {/block}
+
+
+PHP STREAMS:
+============
+
+(see online documentation)
+
+VARIBLE FILTERS:
+================
+
+(see online documentation)
+
+
+STATIC CLASS ACCESS AND NAMESPACE SUPPORT
+=========================================
+
+You can register a class with optional namespace for the use in the template like:
+
+$smarty->register->templateClass('foo','name\name2\myclass');
+
+In the template you can use it like this:
+{foo::method()}  etc.
+
+
+=======================
+
+Please look through it and send any questions/suggestions/etc to the forums.
+
+http://www.phpinsider.com/smarty-forum/viewtopic.php?t=14168
+
+Monte and Uwe

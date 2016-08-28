@@ -1,0 +1,29 @@
+
+
+从github上可以用composer加载Smarty 3.1.21
+
+*******************************************************************************
+*                                                                             *
+*  NOTE: 由于改变你必须用“composer clearcache”语句清理你的本地 composer 缓存，cache with *
+*                                 *
+*                                                                             *
+*******************************************************************************
+
+获取最新稳定版本，在composer.json中：
+    "require": {
+        "smarty/smarty": "~3.1"
+    }
+
+
+获取主干版本：
+    "require": {
+        "smarty/smarty": "~3.1@dev"
+    }
+
+"smarty/smarty" 包在 libs/....  子文件夹里：.
+
+获取演变和文档记录，添加：
+    "require-dev": {
+        "smarty/smarty-dev": "~3.1@dev"
+    }
+
