@@ -50,3 +50,5 @@ Smarty 3.1.11 或者更新版本发布在github上，可以用composer安装
 这是一个包装，可以直接安装3个包。
 
 也可以用compser安装sarty2版本2.6。24或者2.6.28
+
+更多内容请看[wiki](https://github.com/siluzhou/StudySmarty/wiki)
