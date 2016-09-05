@@ -52,4 +52,4 @@ Smarty 3.1.11 或者更新版本发布在github上，可以用composer安装
 也可以用compser安装sarty2版本2.6。24或者2.6.28
 
 更多内容请看[wiki]
-(https://github.com/siluzhou_pku/StudyWiki/wiki)
+(https://github.com/siluzhou-pku/StudyWiki/wiki)
